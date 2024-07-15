@@ -45,5 +45,5 @@ elseif(UNIX AND NOT APPLE)
 endif()
 
 # Add any additional libraries or include directories here
-target_link_libraries(Application PRIVATE bgfx glfw)
+target_link_libraries(Application PRIVATE bgfx bx bimg glfw)
 target_include_directories(Application PRIVATE "./include")

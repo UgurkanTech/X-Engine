@@ -1,23 +1,47 @@
 #include <stdio.h>
-#include <iostream>
+#include <bx/bx.h>
+#include <bx/spscqueue.h>
+#include <bx/thread.h>
 #include <bgfx/bgfx.h>
 #include <bgfx/platform.h>
 #include <GLFW/glfw3.h>
-
-
-#if defined(__unix__) && !defined(__APPLE__)
+#if BX_PLATFORM_LINUX
 #define GLFW_EXPOSE_NATIVE_X11
-#elif defined(_WIN32)
+#elif BX_PLATFORM_WINDOWS
 #define GLFW_EXPOSE_NATIVE_WIN32
-#elif defined(__APPLE__)
+#elif BX_PLATFORM_OSX
 #define GLFW_EXPOSE_NATIVE_COCOA
 #endif
-
 #include <GLFW/glfw3native.h>
 
-using namespace std;
+static bx::DefaultAllocator s_allocator;
+static bx::SpScUnboundedQueue s_apiThreadEvents(&s_allocator);
 
-static bool s_showStats = true;
+enum class EventType
+{
+	Exit,
+	Key,
+	Resize
+};
+
+struct ExitEvent
+{
+	EventType type = EventType::Exit;
+};
+
+struct KeyEvent
+{
+	EventType type = EventType::Key;
+	int key;
+	int action;
+};
+
+struct ResizeEvent
+{
+	EventType type = EventType::Resize;
+	uint32_t width;
+	uint32_t height;
+};
 
 static void glfw_errorCallback(int error, const char *description)
 {
@@ -26,42 +50,27 @@ static void glfw_errorCallback(int error, const char *description)
 
 static void glfw_keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
-	if (key == GLFW_KEY_F1 && action == GLFW_RELEASE)
-		s_showStats = !s_showStats;
+	auto keyEvent = new KeyEvent;
+	keyEvent->key = key;
+	keyEvent->action = action;
+	s_apiThreadEvents.push(keyEvent);
 }
 
-int main(int argc, char **argv)
+struct ApiThreadArgs
 {
-	// Create a GLFW window without an OpenGL context.
-	glfwSetErrorCallback(glfw_errorCallback);
-	if (!glfwInit())
-		return 1;
-	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	GLFWwindow *window = glfwCreateWindow(1024, 768, "helloworld", nullptr, nullptr);
-	if (!window)
-		return 1;
-	glfwSetKeyCallback(window, glfw_keyCallback);
+	bgfx::PlatformData platformData;
+	uint32_t width;
+	uint32_t height;
+};
 
-#if defined(__APPLE__)
-	bgfx::renderFrame(); //signal to bgfx not to create a render thread. Not supported on most apis.
-#endif
+static int32_t runApiThread(bx::Thread *self, void *userData)
+{
+	auto args = (ApiThreadArgs *)userData;
 	// Initialize bgfx using the native window handle and window resolution.
 	bgfx::Init init;
-#if defined(__unix__) && !defined(__APPLE__)
-    init.type = bgfx::RendererType::Vulkan;
-    init.platformData.ndt = glfwGetX11Display();
-    init.platformData.nwh = (void*)(uintptr_t)glfwGetX11Window(window);
-#elif defined(__APPLE__)
-    init.type = bgfx::RendererType::Metal;
-    init.platformData.nwh = glfwGetCocoaWindow(window);
-#elif defined(_WIN32)
-    init.type = bgfx::RendererType::Direct3D12;
-    init.platformData.nwh = glfwGetWin32Window(window);
-#endif
-	int width, height;
-	glfwGetWindowSize(window, &width, &height);
-	init.resolution.width = (uint32_t)width;
-	init.resolution.height = (uint32_t)height;
+	init.platformData = args->platformData;
+	init.resolution.width = args->width;
+	init.resolution.height = args->height;
 	init.resolution.reset = BGFX_RESET_NONE;
 	if (!bgfx::init(init))
 		return 1;
@@ -69,19 +78,28 @@ int main(int argc, char **argv)
 	const bgfx::ViewId kClearView = 0;
 	bgfx::setViewClear(kClearView, BGFX_CLEAR_COLOR);
 	bgfx::setViewRect(kClearView, 0, 0, bgfx::BackbufferRatio::Equal);
-
-
-	bgfx::RendererType::Enum renderer = bgfx::getRendererType();
-	cout << "Renderer: " << bgfx::getRendererName(renderer) << endl;
-
-	while (!glfwWindowShouldClose(window)) {
-		glfwPollEvents();
-		// Handle window resize.
-		int oldWidth = width, oldHeight = height;
-		glfwGetWindowSize(window, &width, &height);
-		if (width != oldWidth || height != oldHeight) {
-			bgfx::reset((uint32_t)width, (uint32_t)height, BGFX_RESET_VSYNC);
-			bgfx::setViewRect(kClearView, 0, 0, bgfx::BackbufferRatio::Equal);
+	uint32_t width = args->width;
+	uint32_t height = args->height;
+	bool showStats = true;
+	bool exit = false;
+	while (!exit) {
+		// Handle events from the main thread.
+		while (auto ev = (EventType *)s_apiThreadEvents.pop()) {
+			if (*ev == EventType::Key) {
+				auto keyEvent = (KeyEvent *)ev;
+				if (keyEvent->key == GLFW_KEY_F1 && keyEvent->action == GLFW_RELEASE)
+					showStats = !showStats;
+			}
+			else if (*ev == EventType::Resize) {
+				auto resizeEvent = (ResizeEvent *)ev;
+				bgfx::reset(resizeEvent->width, resizeEvent->height, BGFX_RESET_VSYNC);
+				bgfx::setViewRect(kClearView, 0, 0, bgfx::BackbufferRatio::Equal);
+				width = resizeEvent->width;
+				height = resizeEvent->height;
+			} else if (*ev == EventType::Exit) {
+				exit = true;
+			}
+			delete ev;
 		}
 		// This dummy draw call is here to make sure that view 0 is cleared if no other draw calls are submitted to view 0.
 		bgfx::touch(kClearView);
@@ -94,11 +112,68 @@ int main(int argc, char **argv)
 		const bgfx::Stats* stats = bgfx::getStats();
 		bgfx::dbgTextPrintf(0, 2, 0x0f, "Backbuffer %dW x %dH in pixels, debug text %dW x %dH in characters.", stats->width, stats->height, stats->textWidth, stats->textHeight);
 		// Enable stats or debug text.
-		bgfx::setDebug(s_showStats ? BGFX_DEBUG_STATS : BGFX_DEBUG_TEXT);
-		// Advance to next frame. Process submitted rendering primitives.
+		bgfx::setDebug(showStats ? BGFX_DEBUG_STATS : BGFX_DEBUG_TEXT);
+		// Advance to next frame. Main thread will be kicked to process submitted rendering primitives.
 		bgfx::frame();
 	}
 	bgfx::shutdown();
-	glfwTerminate();
 	return 0;
+}
+
+int main(int argc, char **argv)
+{
+	// Create a GLFW window without an OpenGL context.
+	glfwSetErrorCallback(glfw_errorCallback);
+	if (!glfwInit())
+		return 1;
+	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+	GLFWwindow *window = glfwCreateWindow(1024, 768, "helloworld multithreaded", nullptr, nullptr);
+	if (!window)
+		return 1;
+	glfwSetKeyCallback(window, glfw_keyCallback);
+	// Call bgfx::renderFrame before bgfx::init to signal to bgfx not to create a render thread.
+	// Most graphics APIs must be used on the same thread that created the window.
+	bgfx::renderFrame();
+	// Create a thread to call the bgfx API from (except bgfx::renderFrame).
+	ApiThreadArgs apiThreadArgs;
+#if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
+	apiThreadArgs.platformData.ndt = glfwGetX11Display();
+	apiThreadArgs.platformData.nwh = (void*)(uintptr_t)glfwGetX11Window(window);
+#elif BX_PLATFORM_OSX
+	apiThreadArgs.platformData.nwh = glfwGetCocoaWindow(window);
+#elif BX_PLATFORM_WINDOWS
+	apiThreadArgs.platformData.nwh = glfwGetWin32Window(window);
+#endif
+	int width, height;
+	glfwGetWindowSize(window, &width, &height);
+	apiThreadArgs.width = (uint32_t)width;
+	apiThreadArgs.height = (uint32_t)height;
+	bx::Thread apiThread;
+	apiThread.init(runApiThread, &apiThreadArgs);
+	// Run GLFW message pump.
+	bool exit = false;
+	while (!exit) {
+		glfwPollEvents();
+		// Send window close event to the API thread.
+		if (glfwWindowShouldClose(window)) {
+			s_apiThreadEvents.push(new ExitEvent);
+			exit = true;
+		}
+		// Send window resize event to the API thread.
+		int oldWidth = width, oldHeight = height;
+		glfwGetWindowSize(window, &width, &height);
+		if (width != oldWidth || height != oldHeight) {
+			auto resize = new ResizeEvent;
+			resize->width = (uint32_t)width;
+			resize->height = (uint32_t)height;
+			s_apiThreadEvents.push(resize);
+		}
+		// Wait for the API thread to call bgfx::frame, then process submitted rendering primitives.
+		bgfx::renderFrame();
+	}
+	// Wait for the API thread to finish before shutting down.
+	while (bgfx::RenderFrame::NoContext != bgfx::renderFrame()) {}
+	apiThread.shutdown();
+	glfwTerminate();
+	return apiThread.getExitCode();
 }
