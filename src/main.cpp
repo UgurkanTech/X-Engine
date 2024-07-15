@@ -133,7 +133,9 @@ int main(int argc, char **argv)
 	glfwSetKeyCallback(window, glfw_keyCallback);
 	// Call bgfx::renderFrame before bgfx::init to signal to bgfx not to create a render thread.
 	// Most graphics APIs must be used on the same thread that created the window.
+	#if BX_PLATFORM_OSX
 	bgfx::renderFrame();
+	#endif	
 	// Create a thread to call the bgfx API from (except bgfx::renderFrame).
 	ApiThreadArgs apiThreadArgs;
 #if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
