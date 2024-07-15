@@ -6,6 +6,7 @@ set(CMAKE_SYSTEM_PROCESSOR arm64)
 # Use default compilers for macOS
 set(CMAKE_C_COMPILER "/usr/bin/clang")
 set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
+set(CMAKE_OBJC_COMPILER "/usr/bin/clang")
 
 # Set up pkg-config
 find_program(PKG_CONFIG_EXECUTABLE NAMES pkg-config PATHS /usr/local/bin /opt/homebrew/bin)
@@ -22,3 +23,11 @@ list(APPEND CMAKE_PROGRAM_PATH "/usr/local/bin" "/opt/homebrew/bin")
 # Libraries and headers
 include_directories("/usr/local/include" "/opt/homebrew/include")
 link_directories("/usr/local/lib" "/opt/homebrew/lib")
+
+set(COCOA_LIBRARY "-framework Cocoa")
+set(COREFOUNDATION_LIBRARY "-framework CoreFoundation")
+set(FOUNDATION_LIBRARY "-framework Foundation")
+set(IOKIT_LIBRARY "-framework IOKit")
+set(METAL_LIBRARY "-framework Metal")
+set(QUARTZCORE_LIBRARY "-framework QuartzCore")
+
