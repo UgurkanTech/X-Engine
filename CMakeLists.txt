@@ -18,10 +18,7 @@ project(Application VERSION 0.1.0 LANGUAGES C CXX)
 # Set Output directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
 
-add_subdirectory(submodules/bgfx)
-add_subdirectory(submodules/glfw)
-
-
+add_subdirectory(submodules)
 
 # Add your source files
 file(GLOB SOURCES "./src/*.cpp")
@@ -45,5 +42,5 @@ elseif(UNIX AND NOT APPLE)
 endif()
 
 # Add any additional libraries or include directories here
-target_link_libraries(Application PRIVATE bgfx bx bimg glfw)
+target_link_libraries(Application PRIVATE bgfx bx bimg glfw imgui)
 target_include_directories(Application PRIVATE "./include")
