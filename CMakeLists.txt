@@ -4,6 +4,8 @@ cmake_minimum_required(VERSION 3.15)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+
+
 # Set the toolchain file before the project command
 if(WIN32)
     set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/toolchains/windows-ucrt64.cmake" CACHE FILEPATH "Toolchain file")
@@ -18,12 +20,26 @@ project(Application VERSION 0.1.0 LANGUAGES C CXX)
 # Set Output directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
 
+
 add_subdirectory(submodules)
 
-# Add your source files
-file(GLOB SOURCES "./src/*.cpp")
+
+set(BGFX_DIR "${CMAKE_SOURCE_DIR}/submodules/bgfx/bgfx")
+
+
+# source files
+file(GLOB SOURCES src/*.cpp src/*.hpp shaders/*.sc)
 
 add_executable(Application ${SOURCES})
+
+add_dependencies(Application compile_shaders)
+
+include(shaders.cmake)
+
+add_dependencies(Application compile_shaders)
+
+
+#add_subdirectory( assets/gen )
 
 # Platform-specific configurations
 if(WIN32)
@@ -42,5 +58,6 @@ elseif(UNIX AND NOT APPLE)
 endif()
 
 # Add any additional libraries or include directories here
-target_link_libraries(Application PRIVATE bgfx bx bimg glfw imgui)
+target_link_libraries(Application PRIVATE bgfx bx bimg glfw example-common)
 target_include_directories(Application PRIVATE "./include")
+
