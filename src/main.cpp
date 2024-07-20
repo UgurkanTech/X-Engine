@@ -144,10 +144,10 @@ public:
 		m_width  = _width;
 		m_height = _height;
 		m_debug  = BGFX_DEBUG_STATS;
-		m_reset  = BGFX_RESET_VSYNC;
+		m_reset  = BGFX_RESET_NONE;
 
 		bgfx::Init init;
-		init.type     = bgfx::RendererType::OpenGL;
+		init.type     = args.m_type;
 		init.vendorId = args.m_pciId;
 		init.platformData.nwh  = entry::getNativeWindowHandle(entry::kDefaultWindowHandle);
 		init.platformData.ndt  = entry::getNativeDisplayHandle();
