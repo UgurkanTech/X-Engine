@@ -1,7 +1,7 @@
 #include <bgfx/bgfx.h>
 #include <bgfx/platform.h>
 #include <bx/math.h>
-
+#define SDL_MAIN_HANDLED
 #include <SDL.h>
 #include <SDL_syswm.h>
 
@@ -84,12 +84,12 @@ void main_loop(void* data)
     ImGui::Render();
     
 
-    ImGui::UpdatePlatformWindows();
+    
     ImGui::RenderPlatformWindowsDefault();
 
     ImGui_Implbgfx_RenderDrawLists(255, ImGui::GetDrawData());
 
-
+    ImGui::UpdatePlatformWindows();
 
     if (!ImGui::GetIO().WantCaptureMouse) {
         // simple input code for orbit camera
@@ -154,7 +154,7 @@ int main(int argc, char** argv)
     const int height = 600;
     SDL_Window* window = SDL_CreateWindow(
         argv[0], SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width,
-        height, SDL_WINDOW_SHOWN);
+        height, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
 
     if (window == nullptr) {
         printf("Window could not be created. SDL_Error: %s\n", SDL_GetError());
@@ -236,12 +236,8 @@ int main(int argc, char** argv)
     bgfx::IndexBufferHandle ibh = bgfx::createIndexBuffer(
         bgfx::makeRef(cube_tri_list, sizeof(cube_tri_list)));
 
-    const std::string shader_root =
-#if BX_PLATFORM_EMSCRIPTEN
-        "shader/embuild/";
-#else
-        "shaders/metal/";
-#endif // BX_PLATFORM_EMSCRIPTEN
+    const std::string shader_root = "shaders/dx11/";
+
 
     std::string vshader;
     if (!fileops::read_file(shader_root + "cubes.vs.bin", vshader)) {
