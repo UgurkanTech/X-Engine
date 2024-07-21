@@ -39,8 +39,8 @@ set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 list(APPEND CMAKE_PROGRAM_PATH "/usr/local/bin" "/opt/homebrew/bin")
 
 # Libraries and headers
-include_directories("/usr/local/include" "/opt/homebrew/include")
-link_directories("/usr/local/lib" "/opt/homebrew/lib")
+include_directories("/usr/local/include" "/opt/homebrew/include" "/opt/local/include")
+link_directories("/usr/local/lib" "/opt/homebrew/lib" "/opt/local/lib")
 
 set(COCOA_LIBRARY "-framework Cocoa")
 set(COREFOUNDATION_LIBRARY "-framework CoreFoundation")
@@ -48,8 +48,11 @@ set(FOUNDATION_LIBRARY "-framework Foundation")
 set(IOKIT_LIBRARY "-framework IOKit")
 set(METAL_LIBRARY "-framework Metal")
 set(QUARTZCORE_LIBRARY "-framework QuartzCore")
+set(GAMECONTROLLER_LIBRARY "-framework GameController")
+set(COREHAPTICS_LIBRARY "-framework CoreHaptics")
 
 # Static build settings
 set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
 set(BUILD_SHARED_LIBS OFF)
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
+
