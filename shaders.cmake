@@ -58,7 +58,7 @@ function(compile_shader SHADER_FILE SHADER_TYPE SHADER_SHORT_TYPE)
             OUTPUT ${OUTPUT_FILES}
             COMMAND ${SHADERC_EXECUTABLE} ${COMMON_ARGS} -o ${SHADER_OUTPUT_DIR}/glsl/${SHADER_NAME}${SHADER_SHORT_TYPE}.bin --platform linux   --profile 420
             COMMAND ${SHADERC_EXECUTABLE} ${COMMON_ARGS} -o ${SHADER_OUTPUT_DIR}/essl/${SHADER_NAME}${SHADER_SHORT_TYPE}.bin --platform android --profile 100_es
-            #COMMAND ${SHADERC_EXECUTABLE} ${COMMON_ARGS} -o ${SHADER_OUTPUT_DIR}/dx11/${SHADER_NAME}${SHADER_SHORT_TYPE}.bin --platform windows --profile s_5_0 -O 3
+            COMMAND ${SHADERC_EXECUTABLE} ${COMMON_ARGS} -o ${SHADER_OUTPUT_DIR}/dx11/${SHADER_NAME}${SHADER_SHORT_TYPE}.bin --platform windows --profile s_5_0 -O 3
             #COMMAND ${SHADERC_EXECUTABLE} ${COMMON_ARGS} -o ${SHADER_OUTPUT_DIR}/dx12/${SHADER_NAME}${SHADER_SHORT_TYPE}.bin --platform windows --profile s_5_0 -O 3
             COMMAND ${SHADERC_EXECUTABLE} ${COMMON_ARGS} -o ${SHADER_OUTPUT_DIR}/metal/${SHADER_NAME}${SHADER_SHORT_TYPE}.bin --platform osx --profile metal
             COMMAND ${SHADERC_EXECUTABLE} ${COMMON_ARGS} -o ${SHADER_OUTPUT_DIR}/spirv/${SHADER_NAME}${SHADER_SHORT_TYPE}.bin --platform linux --profile spirv
