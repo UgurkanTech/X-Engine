@@ -84,12 +84,13 @@ void main_loop(void* data)
     ImGui::Render();
     
 
-    
+    ImGui::UpdatePlatformWindows();
     ImGui::RenderPlatformWindowsDefault();
+
 
     ImGui_Implbgfx_RenderDrawLists(255, ImGui::GetDrawData());
 
-    ImGui::UpdatePlatformWindows();
+
 
     if (!ImGui::GetIO().WantCaptureMouse) {
         // simple input code for orbit camera
