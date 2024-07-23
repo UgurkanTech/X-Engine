@@ -73,6 +73,13 @@ void main_loop(void* data)
         if (current_event.type == SDL_QUIT) {
             context->quit = true;
             break;
+        } else if (current_event.type == SDL_WINDOWEVENT) {
+            if (current_event.window.event == SDL_WINDOWEVENT_RESIZED) {
+                context->width = current_event.window.data1;
+                context->height = current_event.window.data2;
+                bgfx::reset(context->width, context->height, BGFX_RESET_VSYNC);
+                bgfx::setViewRect(0, 0, 0, context->width, context->height);
+            }
         }
     }
 
