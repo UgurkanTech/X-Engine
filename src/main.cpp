@@ -4,6 +4,7 @@
 #define SDL_MAIN_HANDLED
 #include <SDL.h>
 #include <SDL_syswm.h>
+#include <chrono> 
 
 #include "imgui_impl_bgfx.h"
 #include "file-ops.h"
@@ -62,7 +63,14 @@ struct context_t
     int height = 0;
 
     bool quit = false;
+
+    int reset = BGFX_RESET_NONE;
 };
+
+ 
+// Variables for FPS calculation
+auto startTime = std::chrono::high_resolution_clock::now();
+int frameCount = 0;
 
 void main_loop(void* data)
 {
@@ -77,7 +85,7 @@ void main_loop(void* data)
             if (current_event.window.event == SDL_WINDOWEVENT_RESIZED) {
                 context->width = current_event.window.data1;
                 context->height = current_event.window.data2;
-                bgfx::reset(context->width, context->height, BGFX_RESET_VSYNC);
+                bgfx::reset(context->width, context->height, context->reset);
                 bgfx::setViewRect(0, 0, 0, context->width, context->height);
             }
         }
@@ -142,6 +150,23 @@ void main_loop(void* data)
 
     bgfx::submit(0, context->program);
 
+    //set title with renderer and fps
+
+     // Frame timing
+    frameCount++;
+    auto currentTime = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<float> elapsedTime = currentTime - startTime;
+    if (elapsedTime.count() >= 1.0f) {
+        int fps = frameCount / elapsedTime.count();
+        std::string title = "X-Engine: " + std::string(bgfx::getRendererName(bgfx::getRendererType())) + " FPS: " + std::to_string(fps);
+        SDL_SetWindowTitle(context->window, title.c_str());
+        // Reset timing
+        startTime = currentTime;
+        frameCount = 0;
+    }
+
+    
+
     bgfx::frame();
 
 #if BX_PLATFORM_EMSCRIPTEN
@@ -198,9 +223,13 @@ int main(int argc, char** argv)
     bgfx_init.type = bgfx::RendererType::Count; // auto choose renderer
     bgfx_init.resolution.width = width;
     bgfx_init.resolution.height = height;
-    bgfx_init.resolution.reset = BGFX_RESET_VSYNC;
+    bgfx_init.resolution.reset = BGFX_RESET_NONE;
     bgfx_init.platformData = pd;
+    //bgfx_init.type = bgfx::RendererType::OpenGL;
     bgfx::init(bgfx_init);
+
+
+    //bgfx::setDebug(BGFX_DEBUG_STATS);
 
     bgfx::setViewClear(
         0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x6495EDFF, 1.0f, 0);
@@ -214,12 +243,7 @@ int main(int argc, char** argv)
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
-    io.BackendFlags |= ImGuiBackendFlags_RendererHasViewports;    // We can create multi-viewports on the Renderer side (optional)
-
-
-    //io.BackendFlags |= ImGuiBackendFlags_PlatformHasViewports;
-    //io.BackendFlags |= ImGuiBackendFlags_RendererHasViewports;
-
+    io.BackendFlags |= ImGuiBackendFlags_RendererHasViewports;
 
 
     ImGui_Implbgfx_Init(255);
@@ -244,7 +268,20 @@ int main(int argc, char** argv)
     bgfx::IndexBufferHandle ibh = bgfx::createIndexBuffer(
         bgfx::makeRef(cube_tri_list, sizeof(cube_tri_list)));
 
-    const std::string shader_root = "shaders/dx11/";
+    std::string shader_root = "shaders/";
+
+    switch(bgfx::getRendererType())
+    {
+        case bgfx::RendererType::Direct3D11: printf("Direct3D11\n"); 
+        case bgfx::RendererType::Direct3D12: printf("Direct3D12\n"); shader_root = "shaders/dx11/"; break;
+        case bgfx::RendererType::Metal: printf("Metal\n"); shader_root = "shaders/metal/";  break;
+        case bgfx::RendererType::OpenGL: printf("OpenGL\n"); shader_root = "shaders/glsl/";  break;
+        case bgfx::RendererType::OpenGLES: printf("OpenGLES\n"); shader_root = "shaders/essl/"; break;
+        case bgfx::RendererType::Vulkan: printf("Vulkan\n"); shader_root = "shaders/spirv/"; break;
+        case bgfx::RendererType::Noop: printf("Noop\n"); break;
+        case bgfx::RendererType::Count: printf("Count\n"); break;
+        default: printf("Unknown renderer type\n"); break;
+    }
 
 
     std::string vshader;
@@ -274,6 +311,7 @@ int main(int argc, char** argv)
     context.window = window;
     context.vbh = vbh;
     context.ibh = ibh;
+    context.reset = bgfx_init.resolution.reset;
 
 
 
