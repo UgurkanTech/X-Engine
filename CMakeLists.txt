@@ -32,9 +32,7 @@ file(GLOB SOURCES src/*.cpp src/*.hpp include/*.cpp shaders/*.sc)
 add_executable(Application ${SOURCES})
 
 
-include(shaders.cmake)
-
-add_dependencies(Application compile_shaders)
+#add_dependencies(Application compile_shaders)
 
 
 #add_subdirectory( assets/gen )
@@ -59,3 +57,6 @@ endif()
 target_link_libraries(Application PRIVATE imgui bgfx bx bimg SDL2::SDL2)
 
 target_include_directories(Application PRIVATE "./include")
+
+
+include(shaders.cmake)
