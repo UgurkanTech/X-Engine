@@ -16,7 +16,7 @@ X-Engine aims to provide a robust foundation for developing modern cross-platfor
 | macOS  (13.0+) | arm64, x64, Universal     | ✅ Successful       |
 | Android (14+)  | aarch64, x86_64           | ⏳ Planned Feature  |
 | Raspberry Pi   | arm64                     | 📝 Not Tested       |
-| Wasm/Emscripten| -                         | ❌ Not Supported    |
+| Wasm/Emscripten| -                         | ⏳ Planned Feature    |
 
 ## Supported Renderers
 
@@ -28,7 +28,6 @@ X-Engine aims to provide a robust foundation for developing modern cross-platfor
 | OpenGL 2.1+     | ✅ Supported       |
 | Metal           | ✅ Supported       |
 | OpenGL ES 2.0+  | ✅ Supported       |
-| Wasm/Emscripten | ❌ Not Supported   |
 
 ## Features
 - **Cross-Platform:** Successfully tested on Windows (MSYS2 with ucrt64 toolchain supporting DirectX 11 and 12), macOS (native toolchain with Metal API), and Linux.

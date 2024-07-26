@@ -13,6 +13,7 @@
 
 #if BX_PLATFORM_EMSCRIPTEN
 #include "emscripten.h"
+#include <emscripten/html5.h>
 #endif // BX_PLATFORM_EMSCRIPTEN
 
 
