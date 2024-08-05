@@ -16,7 +16,6 @@
 #include <emscripten/html5.h>
 #endif // BX_PLATFORM_EMSCRIPTEN
 
-
 struct PosColorVertex
 {
     float x;
@@ -37,8 +36,7 @@ static const uint16_t cube_tri_list[] = {
     1, 5, 3, 5, 7, 3, 0, 4, 1, 4, 5, 1, 2, 3, 6, 6, 3, 7,
 };
 
-static bgfx::ShaderHandle create_shader(
-    const std::string& shader, const char* name)
+static bgfx::ShaderHandle create_shader(const std::string& shader, const char* name)
 {
     const bgfx::Memory* mem = bgfx::copy(shader.data(), shader.size());
     const bgfx::ShaderHandle handle = bgfx::createShader(mem);
@@ -68,7 +66,6 @@ struct context_t
     int reset = BGFX_RESET_NONE;
 };
 
- 
 // Variables for FPS calculation
 auto startTime = std::chrono::high_resolution_clock::now();
 int frameCount = 0;
@@ -94,19 +91,14 @@ void main_loop(void* data)
 
     ImGui_Implbgfx_NewFrame();
     ImGui_ImplSDL2_NewFrame();
-
     ImGui::NewFrame();
-    ImGui::ShowDemoWindow(); // your drawing here
-    ImGui::Render();
     
+    ImGui::ShowDemoWindow();
 
+    ImGui::Render();
     ImGui::UpdatePlatformWindows();
     ImGui::RenderPlatformWindowsDefault();
-
-
     ImGui_Implbgfx_RenderDrawLists(255, ImGui::GetDrawData());
-
-
 
     if (!ImGui::GetIO().WantCaptureMouse) {
         // simple input code for orbit camera
@@ -151,9 +143,7 @@ void main_loop(void* data)
 
     bgfx::submit(0, context->program);
 
-    //set title with renderer and fps
-
-     // Frame timing
+    // Frame timing and FPS calculation
     frameCount++;
     auto currentTime = std::chrono::high_resolution_clock::now();
     std::chrono::duration<float> elapsedTime = currentTime - startTime;
@@ -165,8 +155,6 @@ void main_loop(void* data)
         startTime = currentTime;
         frameCount = 0;
     }
-
-    
 
     bgfx::frame();
 
@@ -229,7 +217,6 @@ int main(int argc, char** argv)
     //bgfx_init.type = bgfx::RendererType::OpenGL;
     bgfx::init(bgfx_init);
 
-
     //bgfx::setDebug(BGFX_DEBUG_STATS);
 
     bgfx::setViewClear(
@@ -245,7 +232,6 @@ int main(int argc, char** argv)
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
     io.BackendFlags |= ImGuiBackendFlags_RendererHasViewports;
-
 
     ImGui_Implbgfx_Init(255);
 #if BX_PLATFORM_WINDOWS
@@ -263,11 +249,8 @@ int main(int argc, char** argv)
         .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
         .add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true)
         .end();
-    bgfx::VertexBufferHandle vbh = bgfx::createVertexBuffer(
-        bgfx::makeRef(cube_vertices, sizeof(cube_vertices)),
-        pos_col_vert_layout);
-    bgfx::IndexBufferHandle ibh = bgfx::createIndexBuffer(
-        bgfx::makeRef(cube_tri_list, sizeof(cube_tri_list)));
+    bgfx::VertexBufferHandle vbh = bgfx::createVertexBuffer(bgfx::makeRef(cube_vertices, sizeof(cube_vertices)), pos_col_vert_layout);
+    bgfx::IndexBufferHandle ibh = bgfx::createIndexBuffer(bgfx::makeRef(cube_tri_list, sizeof(cube_tri_list)));
 
     std::string shader_root = "shaders/";
 
@@ -283,7 +266,6 @@ int main(int argc, char** argv)
         case bgfx::RendererType::Count: printf("Count\n"); break;
         default: printf("Unknown renderer type\n"); break;
     }
-
 
     std::string vshader;
     if (!fileops::read_file(shader_root + "cubes.vs.bin", vshader)) {
@@ -313,8 +295,6 @@ int main(int argc, char** argv)
     context.vbh = vbh;
     context.ibh = ibh;
     context.reset = bgfx_init.resolution.reset;
-
-
 
 #if BX_PLATFORM_EMSCRIPTEN
     emscripten_set_main_loop_arg(main_loop, &context, -1, 1);
