@@ -252,10 +252,12 @@ int main(int argc, char** argv)
     ImGuiIO& io = ImGui::GetIO();
 
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
+#if !BX_PLATFORM_EMSCRIPTEN
+    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
     io.BackendFlags |= ImGuiBackendFlags_RendererHasViewports;
+#endif
 
     ImGui_Implbgfx_Init(255);
 #if BX_PLATFORM_WINDOWS
