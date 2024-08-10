@@ -280,7 +280,7 @@ int main(int argc, char** argv)
 
     switch(bgfx::getRendererType())
     {
-        case bgfx::RendererType::Direct3D11: printf("Direct3D11\n"); 
+        case bgfx::RendererType::Direct3D11: printf("Direct3D11\n"); shader_root = "shaders/dx11/"; break;
         case bgfx::RendererType::Direct3D12: printf("Direct3D12\n"); shader_root = "shaders/dx11/"; break;
         case bgfx::RendererType::Metal: printf("Metal\n"); shader_root = "shaders/metal/";  break;
         case bgfx::RendererType::OpenGL: printf("OpenGL\n"); shader_root = "shaders/glsl/";  break;
