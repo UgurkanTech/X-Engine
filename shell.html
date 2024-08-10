@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>X-Engine</title>
+    <style>
+      body { margin: 0; overflow: hidden; }
+      canvas { width: 100%; height: 100%; }
+      {{{ SHELL_CSS }}}
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas" oncontextmenu="event.preventDefault()" tabindex=-1></canvas>
+
+    <script type='text/javascript'>
+      var Module = {
+        onRuntimeInitialized: function() {
+          console.log('Emscripten runtime initialized');
+          // Trigger the resize event
+          var checkContextInterval = setInterval(function() {
+            if (Module.canvas.getContext('webgl') || Module.canvas.getContext('webgl2')) {
+                clearInterval(checkContextInterval);
+                var resizeEvent = new Event('resize');
+                window.dispatchEvent(resizeEvent);
+                console.log('Initial resize event triggered');
+                }
+            }, 16);
+        },
+        canvas: (() => {
+          var canvas = document.getElementById('canvas');
+          canvas.addEventListener("webglcontextlost", (e) => { 
+            alert('WebGL context lost. You will need to reload the page.'); 
+            e.preventDefault(); 
+          }, false);
+          return canvas;
+        })(),
+        setStatus: (text) => {
+          console.log(text);
+        },
+        totalDependencies: 0,
+        monitorRunDependencies: (left) => {
+          this.totalDependencies = Math.max(this.totalDependencies, left);
+          Module.setStatus(left ? 'Preparing... (' + (this.totalDependencies-left) + '/' + this.totalDependencies + ')' : 'All downloads complete.');
+        }
+      };
+      Module.setStatus('Downloading...');
+      window.onerror = (event) => {
+        Module.setStatus('Exception thrown, see JavaScript console');
+        Module.setStatus = (text) => {
+          if (text) console.error('[post-exception status] ' + text);
+        };
+      };
+      document.addEventListener('keydown', function(event) {
+        if (event.key === 'F11') {
+          event.preventDefault();
+          if (document.fullscreenElement) {
+            document.exitFullscreen();
+          } else {
+            document.documentElement.requestFullscreen();
+          }
+        }
+        });
+    
+    </script>
+    {{{ SCRIPT }}}
+  </body>
+</html>

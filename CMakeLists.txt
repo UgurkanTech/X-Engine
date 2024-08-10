@@ -56,7 +56,9 @@ if(EMSCRIPTEN)
         -s EXPORTED_FUNCTIONS=['_main'] \
         -s MAX_WEBGL_VERSION=2 \
         -s FORCE_FILESYSTEM=1 \
+        -s OFFSCREEN_FRAMEBUFFER=1 \
         --preload-file ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shaders@/shaders \
+        --shell-file ${CMAKE_SOURCE_DIR}/shell.html \
         -O3")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${WASM_BUILD_FLAGS}")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${WASM_BUILD_FLAGS}")
