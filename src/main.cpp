@@ -66,6 +66,30 @@ struct context_t
     int reset = BGFX_RESET_NONE;
 };
 
+#if BX_PLATFORM_EMSCRIPTEN
+
+EM_BOOL resize_callback(int eventType, const EmscriptenUiEvent* uiEvent, void* userData)
+{
+    printf("resize_callback\n");
+
+    SDL_Window* window = static_cast<SDL_Window*>(userData);
+    int width = uiEvent->windowInnerWidth;
+    int height = uiEvent->windowInnerHeight;
+    SDL_SetWindowSize(window, width, height);
+
+    SDL_Event sdl_event;
+    sdl_event.type = SDL_WINDOWEVENT;
+    sdl_event.window.event = SDL_WINDOWEVENT_RESIZED;
+    sdl_event.window.data1 = width;
+    sdl_event.window.data2 = height;
+    SDL_PushEvent(&sdl_event);
+
+    return EM_TRUE; // Return true to indicate the event was handled
+}
+
+#endif // BX_PLATFORM_EMSCRIPTEN
+
+
 // Variables for FPS calculation
 auto startTime = std::chrono::high_resolution_clock::now();
 int frameCount = 0;
@@ -297,6 +321,7 @@ int main(int argc, char** argv)
     context.reset = bgfx_init.resolution.reset;
 
 #if BX_PLATFORM_EMSCRIPTEN
+    emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, context.window, false, resize_callback);
     emscripten_set_main_loop_arg(main_loop, &context, -1, 1);
 #else
     while (!context.quit) {
