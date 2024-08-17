@@ -1,0 +1,85 @@
+{
+    "version": 3,
+    "cmakeMinimumRequired": {
+      "major": 3,
+      "minor": 20,
+      "patch": 0
+    },
+    "configurePresets": [
+      {
+        "name": "default",
+        "hidden": true,
+        "generator": "Ninja",
+        "binaryDir": "${sourceDir}/build/${presetName}",
+        "cacheVariables": {
+          "CMAKE_EXPORT_COMPILE_COMMANDS": "YES",
+          "CMAKE_CXX_STANDARD": "17",
+          "CMAKE_CXX_STANDARD_REQUIRED": "ON"
+        }
+      },
+      {
+        "name": "windows",
+        "inherits": "default",
+        "description": "Configure for Windows",
+        "toolchainFile": "${sourceDir}/toolchains/windows-ucrt64.cmake",
+        "cacheVariables": {
+          "CMAKE_CXX_FLAGS": "-O3 -Wall -Wformat -static-libgcc -static-libstdc++ -static"
+        }
+      },
+      {
+        "name": "macos",
+        "inherits": "default",
+        "description": "Configure for macOS",
+        "toolchainFile": "${sourceDir}/toolchains/apple.cmake",
+        "cacheVariables": {
+          "CMAKE_CXX_FLAGS": "-O3 -fPIC -Wall -Wformat -framework Metal -framework Cocoa -framework QuartzCore -framework GameController -framework CoreHaptics",
+          "CMAKE_C_FLAGS": "-x objective-c"
+        }
+      },
+      {
+        "name": "linux",
+        "inherits": "default",
+        "description": "Configure for Linux",
+        "toolchainFile": "${sourceDir}/toolchains/linux.cmake",
+        "cacheVariables": {
+          "CMAKE_CXX_FLAGS": "-O3 -fPIC -Wall -Wformat"
+        }
+      },
+      {
+        "name": "emscripten",
+        "inherits": "default",
+        "description": "Configure for Emscripten",
+        "toolchainFile": "${sourceDir}/toolchains/emscripten.cmake",
+        "cacheVariables": {
+          "CMAKE_EXECUTABLE_SUFFIX": ".html",
+          "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "${sourceDir}/bin-web",
+          "CMAKE_CXX_FLAGS": "${WASM_BUILD_FLAGS}",
+          "CMAKE_C_FLAGS": "${WASM_BUILD_FLAGS}",
+          "CMAKE_EXE_LINKER_FLAGS": "${WASM_BUILD_FLAGS}"
+        }
+      }
+    ],
+    "buildPresets": [
+      {
+        "name": "default",
+        "hidden": true,
+        "configurePreset": "default"
+      },
+      {
+        "name": "windows",
+        "configurePreset": "windows"
+      },
+      {
+        "name": "macos",
+        "configurePreset": "macos"
+      },
+      {
+        "name": "linux",
+        "configurePreset": "linux"
+      },
+      {
+        "name": "emscripten",
+        "configurePreset": "emscripten"
+      }
+    ]
+  }
