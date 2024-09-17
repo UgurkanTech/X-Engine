@@ -14,9 +14,10 @@ X-Engine aims to provide a robust foundation for developing modern cross-platfor
 | Windows        | x64                       | ✅ Successful       |
 | Linux          | arm64, x64                | ✅ Successful       |
 | macOS  (13.0+) | arm64, x64, Universal     | ✅ Successful       |
+| Wasm/Emscripten| -                         | ✅ Successful      |
 | Android (14+)  | aarch64, x86_64           | ⏳ Planned Feature  |
 | Raspberry Pi   | arm64                     | 📝 Not Tested       |
-| Wasm/Emscripten| -                         | ⏳ Planned Feature    |
+
 
 ## Supported Renderers
 
