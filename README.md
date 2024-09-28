@@ -1,11 +1,11 @@
 # X-Engine
-X-Engine is an work-in-progress game engine built in C++ with BGFX, ImGui, and SDL2, configured using CMake for seamless cross-platform development.
+X-Engine is an work-in-progress rendering engine built in C++ with BGFX, ImGui, and SDL2, configured using CMake for seamless cross-platform development.
 
-Project Status: [■■-----------------------------] 5% Complete
+Project Status: [■■-----------------------------] 10% Complete
 
 
 ## Description
-X-Engine aims to provide a robust foundation for developing modern cross-platform games. It leverages BGFX for efficient rendering, ImGui for immediate mode GUI, and SDL2 for window and input management.
+X-Engine aims to provide a robust foundation for developing modern cross-platform applications. It leverages BGFX for efficient rendering, ImGui for immediate mode GUI, and SDL2 for window and input management.
 
 ## Build Support
 
@@ -35,3 +35,4 @@ X-Engine aims to provide a robust foundation for developing modern cross-platfor
 - **BGFX Integration:** Leverages BGFX for versatile rendering backend support, including DirectX, Vulkan, OpenGL, Metal, and OpenGL ES.
 - **ImGui Integration:** Includes ImGui for creating intuitive and customizable graphical user interfaces.
 - **SDL2 Support:** Uses SDL2 for cross-platform window creation, management, and input handling.
+- **Emscripten Support** Web Assembly applications that run on browser can be built using Emscripten.
